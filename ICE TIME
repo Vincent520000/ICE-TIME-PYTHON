@@ -1,0 +1,141 @@
+import check
+
+def dif_time(s1, s2):
+  '''
+  Consumes two strings s1 and s2 that represent the time starts and ends, 
+  returns a natural number that shows the time between these two-time points.
+  
+  dif_time: Str Str -> Nat
+  Requires: 
+  s1 and s2 are in the form of mm:ss, with 0 <= ss < 60 and 0 <= mm <= 20 
+  and if mm == 20 then ss == 0.
+  '''
+  L1 = s1.split(':')
+  L2 = s2.split(':')
+  d = (int(L1[0]) - int(L2[0])) * 60 + (int(L1[1]) - int(L2[1]))
+  return d
+
+def ice_times(filename_in, filename_out):
+  '''
+  Opens the file called filename_in, that contains the name of the player, 
+  the period, the time starts and ends, reads each line and writes each  
+  name and difference of time to a new file "filename_out", and returns none.
+    
+  Effects: 
+     Reads file called filename_in
+     Writes to a file called "filename_out" 
+    
+  file_filter: Str Str -> None
+  Requires: 
+     filename_in file exists
+     filename_in and filename_out are both non-empty
+  
+  Examples:
+  ice_times("base_case.txt", "base_case_seconds.txt") => None
+  
+  The file base_case.txt contains
+  Bob Smith,1,1:00,0:00
+  
+  The file time_in_seconds.txt contains
+  Bob Smith,60
+  
+  ice_times("ice_times.txt", "time_in_seconds.txt") => None
+  
+  The file ice_times.txt contains
+  Zoe Son,1,20:00,19:00
+  Wayne Gretzky,1,20:00,19:23
+  Mark Messier,1,20:00,18:53
+  Hayley Wickenheiser,1,18:53,17:00
+  Wayne Gretzky,1,1:00,0:00
+
+  and the file time_in_seconds.txt contains:
+  Hayley Wickenheiser,113
+  Mark Messier,67
+  Wayne Gretzky,97
+  Zoe Son,60
+  '''
+
+  file1 = open(filename_in, 'r')
+  lst0 = file1.readlines()
+  file1.close()
+  file2 = open(filename_out, 'w')
+  lst0.sort()
+  lst_s = lst0
+  for i in range(len(lst_s)):
+    lst_s[i] = lst_s[i].split(',')
+    lst_s[i] = [lst_s[i][0], dif_time(lst_s[i][2], lst_s[i][3])]
+  L = []
+  for m in range(len(lst_s)):
+    s = 0
+    for n in range(len(L)):
+      if lst_s[m][0] == L[n][0]:
+        L[n][1] = L[n][1] + lst_s[m][1]
+        s = s + 1
+    if s == 0:
+      L = L + [lst_s[m]]
+  for i in range(len(L)):
+    line = str(L[i][0]) + ',' + str(L[i][1]) + '\n'
+    file2.write(line)
+  file2.close()
+
+##Example:
+# Test 1: Base case
+# base_case.txt contains the following:
+# Bob Smith,1,1:00,0:00
+# base_case_expected.txt contains the following:
+# Bob Smith,60
+check.set_file_exact("base_case_seconds.txt", "base_case_expected.txt")
+check.expect('Base case', ice_times("base_case.txt", "base_case_seconds.txt"), None)
+
+# Test 2: Given Example
+# ice_times.txt contains the following:
+# Zoe Son,1,20:00,19:00
+# Wayne Gretzky,1,20:00,19:23
+# Mark Messier,1,20:00,18:53
+# Hayley Wickenheiser,1,18:53,17:00
+# Wayne Gretzky,1,1:00,0:00
+# ice_times_expected.txt contains the following:
+# Hayley Wickenheiser,113
+# Mark Messier,67
+# Wayne Gretzky,97
+# Zoe Son,60
+check.set_file_exact("time_in_seconds.txt", "ice_times_expected.txt")
+check.expect('Example', ice_times("ice_times.txt", "time_in_seconds.txt"), None)
+
+##Tests:
+
+# Test 3: normal case
+# case1.txt contains the following:
+# Peter Shaw,1,20:00,0:00
+# Sam Brown,2,2:00,1:59
+# Hordan Williams,3,1:00,0:30
+# Larry Lee,4,0:30,0:10
+# case1_expected.txt contains the following:
+# Hordan Williams,30
+# Larry Lee,20
+# Peter Shaw,1200
+# Sam Brown,1
+check.set_file_exact("case1_seconds.txt", "case1_expected.txt")
+check.expect('Case1', ice_times("case1.txt", "case1_seconds.txt"), None)
+
+# Test 4: long time case
+# case2.txt contains the following:
+# Robert Moore,3,20:00,0:00
+# Leon White,2,11:56,10:03
+# case2_expected.txt contains the following:
+# Leon White,113
+# Robert Moore,1200
+check.set_file_exact("case2_seconds.txt", "case2_expected.txt")
+check.expect('Case2', ice_times("case2.txt", "case2_seconds.txt"), None)
+
+# Test 5: one person
+# case3.txt contains the following:
+# Cristino Martin,1,20:00,19:00
+# Cristino Martin,1,18:00,9:30
+# Cristino Martin,1,8:58,7:26
+# Cristino Martin,2,20:00,0:00
+# Cristino Martin,4,19:59,0:00
+# case3_expected.txt contains the following:
+# Cristino Martin,3061
+check.set_file_exact("case3_seconds.txt", "case3_expected.txt")
+check.expect('Case3', ice_times("case3.txt", "case3_seconds.txt"), None)
